@@ -83,6 +83,7 @@ try {
 
 try {
     Invoke-WebRequest -Uri $imgUrl -OutFile $imgPath -UseBasicParsing
+    Write-Host "Downloaded image to $imgPath"
     Start-Sleep -Milliseconds 500
     if (Test-Path $imgPath) {
         $code = @"
@@ -107,6 +108,7 @@ public class Wallpaper {
 
 try {
     Invoke-WebRequest -Uri $soundUrl -OutFile $soundPath -UseBasicParsing
+    Write-Host "Downloaded sound to $soundPath"
     Start-Sleep -Milliseconds 500
     if (Test-Path $soundPath) {
         Add-Type -AssemblyName presentationCore
