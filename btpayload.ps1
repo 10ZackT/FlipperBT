@@ -2,7 +2,10 @@
 
 # Paths
 $temp        = $env:TEMP
-$desktop = [Environment]::GetFolderPath("Desktop")
+$desktop = [Environment]::ExpandEnvironmentVariables(
+    (Get-ItemProperty "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders").Desktop
+)
+
 $username    = $env:USERNAME
 
 $imgUrl      = "https://raw.githubusercontent.com/10ZackT/FlipperBT/main/bt.png"
