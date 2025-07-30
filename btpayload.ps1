@@ -20,33 +20,38 @@ Remove-Item $imgPath, $bmpPath, $soundPath, $reportPath -ErrorAction SilentlyCon
 # -------------------------------
 # 1. Create DOOMS Report on Desktop
 # -------------------------------
-$doomsLevels = @(
-    "Level 1 - Mild Sensitivity",
-    "Level 2 - Visual Aura",
-    "Level 3 - Reactive Pulse",
-    "Level 4 - Partial Repatriation",
-    "Level 5 - Full Repatriation",
-    "Level 6 - Enhanced Chiral Perception"
-)
-$level = Get-Random -InputObject $doomsLevels
 
-$abilities = @(
-    "Timefall Resistance",
-    "Chiral Allergy",
-    "Enhanced Odradek Sync",
-    "Partial BT Detection",
-    "Repatriation (Death Return)",
-    "Fragile Jump (Short Range Teleport)",
-    "Bridge Link Bond Sensitivity"
-)
-$selectedAbilities = ($abilities | Get-Random -Count (Get-Random -Minimum 1 -Maximum 4)) -join ", "
-$timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+try {
+    $desktop = [Environment]::GetFolderPath("Desktop")
+    $reportPath = Join-Path $desktop "DOOMS_Report.txt"
 
-$report = @"
+    $doomsLevels = @(
+        "Level 1 - Mild Sensitivity",
+        "Level 2 - Visual Aura",
+        "Level 3 - Reactive Pulse",
+        "Level 4 - Partial Repatriation",
+        "Level 5 - Full Repatriation",
+        "Level 6 - Enhanced Chiral Perception"
+    )
+    $level = Get-Random -InputObject $doomsLevels
+
+    $abilities = @(
+        "Timefall Resistance",
+        "Chiral Allergy",
+        "Enhanced Odradek Sync",
+        "Partial BT Detection",
+        "Repatriation (Death Return)",
+        "Fragile Jump (Short Range Teleport)",
+        "Bridge Link Bond Sensitivity"
+    )
+    $selectedAbilities = ($abilities | Get-Random -Count (Get-Random -Minimum 1 -Maximum 4)) -join ", "
+    $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+
+    $report = @"
 -------------------------------------------
 CONFIDENTIAL - BRIDGES MEDICAL DOSSIER
 -------------------------------------------
-Subject: $username
+Subject: $env:USERNAME
 Scan Time: $timestamp
 Chiral Field Intensity: Elevated
 
@@ -67,8 +72,19 @@ Unauthorized dissemination of this report is punishable by UCA Directive 0049A.
 -------------------------------------------
 "@
 
-Set-Content -Path $reportPath -Value $report -Encoding UTF8 -Force
-Write-Host "✅ DOOMS report written to: $reportPath"
+    # Force file write with logging
+    Set-Content -Path $reportPath -Value $report -Encoding UTF8 -Force
+
+    # Confirm it's actually there
+    if (Test-Path $reportPath) {
+        Write-Host "✅ DOOMS report created at: $reportPath"
+    } else {
+        Write-Host "❌ Set-Content claimed success, but file was not created."
+    }
+} catch {
+    Write-Host "❌ DOOMS report failed: $($_.Exception.Message)"
+}
+
 
 # -------------------------------
 # 2. Show Chiral Spike Warning
