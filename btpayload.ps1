@@ -3,10 +3,10 @@
 # Variables
 $desktop = [Environment]::GetFolderPath('Desktop')
 $username = $env:USERNAME
-$imgUrl = "https://raw.githubusercontent.com/10ZackT/FlipperBT/main/bt.png"
-$imgPath = "$desktop\chiral_log_α73.png"
-$soundUrl = "https://raw.githubusercontent.com/10ZackT/FlipperBT/main/bt_whistle.wav"
-$soundPath = "$env:TEMP\bt_whistle.wav"
+$imgUrl = "https://github.com/10ZackT/FlipperBT/blob/main/bt.png"
+$imgPath = "$desktop\bt.png"
+$soundUrl = "https://github.com/10ZackT/FlipperBT/blob/main/bt_whistle.mp3"
+$soundPath = "$env:TEMP\bt_whistle.mp3"
 $reportPath = "$desktop\DOOMS_Report.txt"
 
 # -------------------------------
