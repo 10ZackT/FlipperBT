@@ -84,13 +84,17 @@ try {
 }
 
 # -------------------------------
-# 3. Download + Force Wallpaper Set
+# 3. Download and Set Wallpaper
 # -------------------------------
 try {
     Invoke-WebRequest -Uri $imgUrl -OutFile $imgPath -UseBasicParsing -ErrorAction Stop
     Write-Host "✅ Image downloaded to $imgPath"
 
+    # Escape any backslashes
+    $escapedPath = $imgPath -replace '\\', '\\\\'
+
     $code = @"
+using System;
 using System.Runtime.InteropServices;
 public class Wallpaper {
     [DllImport("user32.dll", SetLastError = true)]
@@ -98,22 +102,26 @@ public class Wallpaper {
 }
 "@
 
-    # Force use of 64-bit powershell context
-    if ([Environment]::Is64BitProcess -eq $false) {
-        Write-Host "❌ PowerShell is 32-bit. Wallpaper setting may fail."
-    }
-
     Add-Type -TypeDefinition $code -ErrorAction Stop
-    $result = [Wallpaper]::SystemParametersInfo(20, 0, $imgPath, 3)
 
-    if (-not $result) {
-        Write-Host "❌ Failed to set wallpaper. SystemParametersInfo returned false."
-    } else {
+    # Constants
+    $SPI_SETDESKWALLPAPER = 0x0014
+    $SPIF_UPDATEINIFILE = 0x01
+    $SPIF_SENDCHANGE = 0x02
+    $flags = $SPIF_UPDATEINIFILE -bor $SPIF_SENDCHANGE
+
+    $result = [Wallpaper]::SystemParametersInfo($SPI_SETDESKWALLPAPER, 0, $imgPath, $flags)
+
+    if ($result) {
         Write-Host "✅ Wallpaper set successfully."
+    } else {
+        $errCode = [System.Runtime.InteropServices.Marshal]::GetLastWin32Error()
+        Write-Host "❌ Failed to set wallpaper. Win32 Error Code: $errCode"
     }
 } catch {
     Write-Host "❌ Wallpaper setup failed: $($_.Exception.Message)"
 }
+
 
 # -------------------------------
 # 4. Download and Play Sound
