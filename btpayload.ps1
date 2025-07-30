@@ -82,13 +82,8 @@ try {
 # -------------------------------
 
 try {
-    Start-BitsTransfer -Source $imgUrl -Destination $imgPath
-    $attempts = 0
-    while (!(Test-Path $imgPath) -and ($attempts -lt 5)) {
-        Start-Sleep -Milliseconds 500
-        $attempts++
-    }
-
+    Invoke-WebRequest -Uri $imgUrl -OutFile $imgPath -UseBasicParsing
+    Start-Sleep -Milliseconds 500
     if (Test-Path $imgPath) {
         $code = @"
 using System.Runtime.InteropServices;
@@ -111,13 +106,8 @@ public class Wallpaper {
 # -------------------------------
 
 try {
-    Start-BitsTransfer -Source $soundUrl -Destination $soundPath
-    $attempts = 0
-    while (!(Test-Path $soundPath) -and ($attempts -lt 5)) {
-        Start-Sleep -Milliseconds 500
-        $attempts++
-    }
-
+    Invoke-WebRequest -Uri $soundUrl -OutFile $soundPath -UseBasicParsing
+    Start-Sleep -Milliseconds 500
     if (Test-Path $soundPath) {
         Add-Type -AssemblyName presentationCore
         $player = New-Object system.media.soundplayer
