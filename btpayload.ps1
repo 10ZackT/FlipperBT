@@ -25,8 +25,21 @@ Remove-Item $imgPath, $bmpPath, $soundPath, $reportPath -ErrorAction SilentlyCon
 # -------------------------------
 
 try {
-    $desktop = "$env:USERPROFILE\Desktop"
+    # Get the real desktop path from the registry
+$desktop = [Environment]::ExpandEnvironmentVariables(
+    (Get-ItemProperty "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders").Desktop
+)
+
+# Ensure the directory exists
+if (-not (Test-Path $desktop)) {
+    New-Item -ItemType Directory -Path $desktop -Force | Out-Null
+}
+
+# Now create the report file
 $reportPath = Join-Path $desktop "DOOMS_Report.txt"
+
+# (your existing report generation code below)
+Set-Content -Path $reportPath -Value $report -Encoding UTF8 -Force
 
     $doomsLevels = @(
         "Level 1 - Mild Sensitivity",
