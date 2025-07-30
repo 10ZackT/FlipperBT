@@ -1,9 +1,9 @@
-# === Death Stranding BT Encounter Payload ===
+# === Death Stranding BT Encounter Payload (Finalized) ===
 
-# Paths
+# Hardcoded and direct paths (avoids inconsistent environment resolution)
 $desktop     = "$env:USERPROFILE\Desktop"
 $username    = $env:USERNAME
-$imgUrl      = "https://raw.githubusercontent.com/10ZackT/FlipperBT/main/bt_whistle.wav"
+$imgUrl      = "https://raw.githubusercontent.com/10ZackT/FlipperBT/main/bt.png"
 $imgPath     = "$desktop\bt.png"
 $soundUrl    = "https://raw.githubusercontent.com/10ZackT/FlipperBT/main/bt_whistle.wav"
 $soundPath   = "$env:TEMP\bt_whistle.wav"
@@ -61,14 +61,10 @@ Unauthorized dissemination of this report is punishable by UCA Directive 0049A.
 "@
 
 try {
-    $report | Out-File -Encoding UTF8 $reportPath -Force
-    if (Test-Path $reportPath) {
-        Write-Host "✅ DOOMS report created at: $reportPath"
-    } else {
-        Write-Host "❌ DOOMS report creation failed: file not found after writing."
-    }
+    $report | Out-File -Encoding UTF8 -Force -FilePath $reportPath
+    Write-Host "✅ DOOMS report written to $reportPath"
 } catch {
-    Write-Host "❌ DOOMS report error: $($_.Exception.Message)"
+    Write-Host "❌ Failed to write DOOMS report: $($_.Exception.Message)"
 }
 
 # -------------------------------
@@ -79,51 +75,43 @@ try {
     Add-Type -AssemblyName PresentationFramework
     [System.Windows.MessageBox]::Show("↑↑↑ Chiralium Spike Detected ↑↑↑`nPossible BT presence nearby.","DOOMS Warning",[System.Windows.MessageBoxButton]::OK,[System.Windows.MessageBoxImage]::Warning)
 } catch {
-    Write-Host "❌ Popup failed: $($_.Exception.Message)"
+    Write-Host "❌ Failed to show popup: $($_.Exception.Message)"
 }
 
 # -------------------------------
-# 3. Download and Set Wallpaper
+# 3. Download and Set Wallpaper (always overwrites)
 # -------------------------------
 
 try {
-    Invoke-WebRequest -Uri $imgUrl -OutFile $imgPath -UseBasicParsing
+    Invoke-WebRequest -Uri $imgUrl -OutFile $imgPath -UseBasicParsing -ErrorAction Stop
     Write-Host "✅ Downloaded image to $imgPath"
-    Start-Sleep -Milliseconds 500
-    if (Test-Path $imgPath) {
-        $code = @"
+
+    $code = @"
 using System.Runtime.InteropServices;
 public class Wallpaper {
     [DllImport("user32.dll", SetLastError = true)]
     public static extern bool SystemParametersInfo(int uAction, int uParam, string lpvParam, int fuWinIni);
 }
 "@
-        Add-Type -TypeDefinition $code
-        [Wallpaper]::SystemParametersInfo(20, 0, $imgPath, 3)
-    } else {
-        Write-Host "❌ Wallpaper image not found after download."
-    }
+    Add-Type -TypeDefinition $code -ErrorAction Stop
+    [Wallpaper]::SystemParametersInfo(20, 0, $imgPath, 3)
 } catch {
-    Write-Host "❌ Wallpaper set failed: $($_.Exception.Message)"
+    Write-Host "❌ Failed to download or set wallpaper: $($_.Exception.Message)"
 }
 
 # -------------------------------
-# 4. Download and Play Sound
+# 4. Download and Play Sound (.wav only)
 # -------------------------------
 
 try {
-    Invoke-WebRequest -Uri $soundUrl -OutFile $soundPath -UseBasicParsing
+    Invoke-WebRequest -Uri $soundUrl -OutFile $soundPath -UseBasicParsing -ErrorAction Stop
     Write-Host "✅ Downloaded sound to $soundPath"
-    Start-Sleep -Milliseconds 500
-    if (Test-Path $soundPath) {
-        Add-Type -AssemblyName presentationCore
-        $player = New-Object system.media.soundplayer
-        $player.SoundLocation = $soundPath
-        $player.Load()
-        $player.PlaySync()
-    } else {
-        Write-Host "❌ Sound file not found after download."
-    }
+
+    Add-Type -AssemblyName presentationCore -ErrorAction Stop
+    $player = New-Object system.media.soundplayer
+    $player.SoundLocation = $soundPath
+    $player.Load()
+    $player.PlaySync()
 } catch {
-    Write-Host "❌ Sound playback failed: $($_.Exception.Message)"
+    Write-Host "❌ Failed to download or play sound: $($_.Exception.Message)"
 }
