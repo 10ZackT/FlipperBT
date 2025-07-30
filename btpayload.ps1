@@ -1,16 +1,16 @@
-# === BT Encounter Payload ===
+# === Death Stranding BT Encounter Payload ===
 
-# Variables
-$desktop = [Environment]::GetFolderPath('Desktop')
-$username = $env:USERNAME
-$imgUrl = "https://github.com/10ZackT/FlipperBT/blob/main/bt.png"
-$imgPath = "$desktop\bt.png"
-$soundUrl = "https://github.com/10ZackT/FlipperBT/blob/main/bt_whistle.mp3"
-$soundPath = "$env:TEMP\bt_whistle.mp3"
-$reportPath = "$desktop\DOOMS_Report.txt"
+# Paths
+$desktop     = [Environment]::GetFolderPath('Desktop')
+$username    = $env:USERNAME
+$imgUrl      = "https://raw.githubusercontent.com/10ZackT/FlipperBT/main/bt.png"
+$imgPath     = "$desktop\bt.png"
+$soundUrl    = "https://raw.githubusercontent.com/10ZackT/FlipperBT/main/bt_whistle.mp3"
+$soundPath   = "$env:TEMP\bt_whistle.mp3"
+$reportPath  = "$desktop\DOOMS_Report.txt"
 
 # -------------------------------
-# 1. Create DOOMS Report (Randomized)
+# 1. Create DOOMS Report
 # -------------------------------
 
 $doomsLevels = @(
@@ -63,12 +63,13 @@ Unauthorized dissemination of this report is punishable by UCA Directive 0049A.
 try {
     $report | Out-File -Encoding UTF8 $reportPath
 } catch {
-    Write-Output "DOOMS report failed to write: $($_.Exception.Message)"
+    Write-Output "DOOMS report failed: $($_.Exception.Message)"
 }
 
 # -------------------------------
-# 2. Chiralium Detection Popup
+# 2. Chiralium Spike Warning
 # -------------------------------
+
 try {
     Add-Type -AssemblyName PresentationFramework
     [System.Windows.MessageBox]::Show("↑↑↑ Chiralium Spike Detected ↑↑↑`nPossible BT presence nearby.","DOOMS Warning",[System.Windows.MessageBoxButton]::OK,[System.Windows.MessageBoxImage]::Warning)
@@ -77,10 +78,17 @@ try {
 }
 
 # -------------------------------
-# 3. Download and Set BT Wallpaper
+# 3. Download and Set Wallpaper
 # -------------------------------
+
 try {
-    Invoke-WebRequest -Uri $imgUrl -OutFile $imgPath -UseBasicParsing
+    Start-BitsTransfer -Source $imgUrl -Destination $imgPath
+    $attempts = 0
+    while (!(Test-Path $imgPath) -and ($attempts -lt 5)) {
+        Start-Sleep -Milliseconds 500
+        $attempts++
+    }
+
     if (Test-Path $imgPath) {
         $code = @"
 using System.Runtime.InteropServices;
@@ -99,15 +107,26 @@ public class Wallpaper {
 }
 
 # -------------------------------
-# 4. Download and Play BT Sound
+# 4. Download and Play Sound
 # -------------------------------
+
 try {
-    Invoke-WebRequest -Uri $soundUrl -OutFile $soundPath -UseBasicParsing
-    Add-Type -AssemblyName presentationCore
-    $player = New-Object system.media.soundplayer
-    $player.SoundLocation = $soundPath
-    $player.Load()
-    $player.PlaySync()
+    Start-BitsTransfer -Source $soundUrl -Destination $soundPath
+    $attempts = 0
+    while (!(Test-Path $soundPath) -and ($attempts -lt 5)) {
+        Start-Sleep -Milliseconds 500
+        $attempts++
+    }
+
+    if (Test-Path $soundPath) {
+        Add-Type -AssemblyName presentationCore
+        $player = New-Object system.media.soundplayer
+        $player.SoundLocation = $soundPath
+        $player.Load()
+        $player.PlaySync()
+    } else {
+        Write-Output "Sound file not found after download."
+    }
 } catch {
     Write-Output "Sound playback failed: $($_.Exception.Message)"
 }
