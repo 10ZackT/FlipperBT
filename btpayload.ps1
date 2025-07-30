@@ -2,7 +2,7 @@
 
 # Paths
 $temp        = $env:TEMP
-$desktop     = "$env:USERPROFILE\Desktop"
+$desktop = [Environment]::GetFolderPath("Desktop")
 $username    = $env:USERNAME
 
 $imgUrl      = "https://raw.githubusercontent.com/10ZackT/FlipperBT/main/bt.png"
