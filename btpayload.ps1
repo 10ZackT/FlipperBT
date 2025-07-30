@@ -22,8 +22,8 @@ Remove-Item $imgPath, $bmpPath, $soundPath, $reportPath -ErrorAction SilentlyCon
 # -------------------------------
 
 try {
-    $desktop = [Environment]::GetFolderPath("Desktop")
-    $reportPath = Join-Path $desktop "DOOMS_Report.txt"
+    $desktop = "$env:USERPROFILE\Desktop"
+$reportPath = Join-Path $desktop "DOOMS_Report.txt"
 
     $doomsLevels = @(
         "Level 1 - Mild Sensitivity",
