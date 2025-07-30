@@ -1,79 +1,113 @@
 # === BT Encounter Payload ===
 
+# Variables
 $desktop = [Environment]::GetFolderPath('Desktop')
-$imgUrl = "https://tse1.mm.bing.net/th/id/OIP.zkXRoEI1bi_78vt4JfWjYgHaEK"
+$username = $env:USERNAME
+$imgUrl = "https://raw.githubusercontent.com/10ZackT/FlipperBT/main/bt.png"
 $imgPath = "$desktop\chiral_log_α73.png"
-$soundUrl = "https://www.101soundboards.com/sounds/24348530-kojima-pro-whistle"
+$soundUrl = "https://raw.githubusercontent.com/10ZackT/FlipperBT/main/bt_whistle.wav"
+$soundPath = "$env:TEMP\bt_whistle.wav"
 $reportPath = "$desktop\DOOMS_Report.txt"
 
-# 1. Write fake DOOMS report
+# -------------------------------
+# 1. Create DOOMS Report (Randomized)
+# -------------------------------
+
+$doomsLevels = @(
+    "Level 1 - Mild Sensitivity",
+    "Level 2 - Visual Aura",
+    "Level 3 - Reactive Pulse",
+    "Level 4 - Partial Repatriation",
+    "Level 5 - Full Repatriation",
+    "Level 6 - Enhanced Chiral Perception"
+)
+$level = Get-Random -InputObject $doomsLevels
+
+$abilities = @(
+    "Timefall Resistance",
+    "Chiral Allergy",
+    "Enhanced Odradek Sync",
+    "Partial BT Detection",
+    "Repatriation (Death Return)",
+    "Fragile Jump (Short Range Teleport)",
+    "Bridge Link Bond Sensitivity"
+)
+$selectedAbilities = ($abilities | Get-Random -Count (Get-Random -Minimum 1 -Maximum 4)) -join ", "
+$timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+
 $report = @"
-Chiral Density Report - Level 4
-Subject ID: Porter_77
-DOOMS Level: Latent Activation
-Symptoms: Hallucinations, irregular heart rate, sensitivity to BT presence.
-Chiralium spikes detected in surrounding area.
+-------------------------------------------
+CONFIDENTIAL - BRIDGES MEDICAL DOSSIER
+-------------------------------------------
+Subject: $username
+Scan Time: $timestamp
+Chiral Field Intensity: Elevated
 
->> Urgent: Evacuation protocol advised.
+DOOMS Level: $level
+
+Observed Traits:
+$selectedAbilities
+
+Symptoms:
+- Tachycardia under Chiral exposure
+- Subject exhibits abnormal neural oscillation
+- Increased response to Beached Things (BT) proximity
+
+NOTE:
+Subject is under observation by Bridges Medical Division.
+Unauthorized dissemination of this report is punishable by UCA Directive 0049A.
+
+-------------------------------------------
 "@
-$report | Out-File -Encoding UTF8 $reportPath
 
-# 2. Show warning popup
-Add-Type -AssemblyName PresentationFramework
-[System.Windows.MessageBox]::Show("↑↑↑ Chiralium Spike Detected ↑↑↑`nPossible BT presence nearby.","DOOMS Warning",[System.Windows.MessageBoxButton]::OK,[System.Windows.MessageBoxImage]::Warning)
+try {
+    $report | Out-File -Encoding UTF8 $reportPath
+} catch {
+    Write-Output "DOOMS report failed to write: $($_.Exception.Message)"
+}
 
-# 3. Download BT image and save to desktop
+# -------------------------------
+# 2. Chiralium Detection Popup
+# -------------------------------
+try {
+    Add-Type -AssemblyName PresentationFramework
+    [System.Windows.MessageBox]::Show("↑↑↑ Chiralium Spike Detected ↑↑↑`nPossible BT presence nearby.","DOOMS Warning",[System.Windows.MessageBoxButton]::OK,[System.Windows.MessageBoxImage]::Warning)
+} catch {
+    Write-Output "Popup failed: $($_.Exception.Message)"
+}
+
+# -------------------------------
+# 3. Download and Set BT Wallpaper
+# -------------------------------
 try {
     Invoke-WebRequest -Uri $imgUrl -OutFile $imgPath -UseBasicParsing
     if (Test-Path $imgPath) {
-        Write-Output "Image dropped: $imgPath"
-    } else {
-        Write-Output "Failed to download image."
-    }
-} catch {
-    Write-Output "Image error: $($_.Exception.Message)"
-}
-
-# 4. Set BT image as wallpaper
-try {
-    $code = @"
+        $code = @"
 using System.Runtime.InteropServices;
 public class Wallpaper {
     [DllImport("user32.dll", SetLastError = true)]
     public static extern bool SystemParametersInfo(int uAction, int uParam, string lpvParam, int fuWinIni);
 }
 "@
-    Add-Type -TypeDefinition $code
-    [Wallpaper]::SystemParametersInfo(20, 0, $imgPath, 3)
+        Add-Type -TypeDefinition $code
+        [Wallpaper]::SystemParametersInfo(20, 0, $imgPath, 3)
+    } else {
+        Write-Output "Wallpaper image not found after download."
+    }
 } catch {
     Write-Output "Wallpaper set failed: $($_.Exception.Message)"
 }
 
-# 5. Play sound (browser-based fallback)
-Start-Process $soundUrl
-
-
-# Simulate Chiralium scan
-Add-Type -AssemblyName PresentationFramework
-[System.Windows.MessageBox]::Show("↑↑↑ Chiralium Spike Detected ↑↑↑`nPossible BT presence nearby.","DOOMS Warning",[System.Windows.MessageBoxButton]::OK,[System.Windows.MessageBoxImage]::Warning)
-
-# Flicker effect
-$original = Get-ItemProperty -Path 'HKCU:\Control Panel\Desktop\' -Name Wallpaper
-$black = "$env:TEMP\black.jpg"
-Add-Type -AssemblyName System.Drawing
-$bmp = New-Object System.Drawing.Bitmap 1920,1080
-$g = [System.Drawing.Graphics]::FromImage($bmp)
-$g.Clear([System.Drawing.Color]::Black)
-$bmp.Save($black, [System.Drawing.Imaging.ImageFormat]::Jpeg)
-$g.Dispose()
-$code = @"
-[DllImport(\"user32.dll\")]
-public static extern bool SystemParametersInfo(int uAction, int uParam, string lpvParam, int fuWinIni);
-"@
-Add-Type -MemberDefinition $code -Name WinAPI -Namespace Native
-[Native.WinAPI]::SystemParametersInfo(20, 0, $black, 3)
-Start-Sleep -Seconds 2
-[Native.WinAPI]::SystemParametersInfo(20, 0, $original.Wallpaper, 3)
-
-# Play sound
-Start-Process $soundUrl
+# -------------------------------
+# 4. Download and Play BT Sound
+# -------------------------------
+try {
+    Invoke-WebRequest -Uri $soundUrl -OutFile $soundPath -UseBasicParsing
+    Add-Type -AssemblyName presentationCore
+    $player = New-Object system.media.soundplayer
+    $player.SoundLocation = $soundPath
+    $player.Load()
+    $player.PlaySync()
+} catch {
+    Write-Output "Sound playback failed: $($_.Exception.Message)"
+}
