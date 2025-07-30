@@ -3,7 +3,7 @@
 # Paths
 $desktop     = "$env:USERPROFILE\Desktop"
 $username    = $env:USERNAME
-$imgUrl      = "https://raw.githubusercontent.com/10ZackT/FlipperBT/main/bt.png"
+$imgUrl      = "https://raw.githubusercontent.com/10ZackT/FlipperBT/main/bt_whistle.wav"
 $imgPath     = "$desktop\bt.png"
 $soundUrl    = "https://raw.githubusercontent.com/10ZackT/FlipperBT/main/bt_whistle.wav"
 $soundPath   = "$env:TEMP\bt_whistle.wav"
