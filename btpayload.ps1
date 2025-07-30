@@ -1,11 +1,12 @@
-# BT Encounter Simulation Script
+# === BT Encounter Payload ===
+
 $desktop = [Environment]::GetFolderPath('Desktop')
-$imgUrl = "https://tse1.mm.bing.net/th/id/OIP.zkXRoEI1bi_78vt4JfWjYgHaEK?r=0&rs=1&pid=ImgDetMain&o=7&rm=3"
+$imgUrl = "https://tse1.mm.bing.net/th/id/OIP.zkXRoEI1bi_78vt4JfWjYgHaEK"
 $imgPath = "$desktop\chiral_log_α73.png"
 $soundUrl = "https://www.101soundboards.com/sounds/24348530-kojima-pro-whistle"
 $reportPath = "$desktop\DOOMS_Report.txt"
 
-# Write fake DOOMS report
+# 1. Write fake DOOMS report
 $report = @"
 Chiral Density Report - Level 4
 Subject ID: Porter_77
@@ -17,8 +18,40 @@ Chiralium spikes detected in surrounding area.
 "@
 $report | Out-File -Encoding UTF8 $reportPath
 
-# Download and drop image
-Invoke-WebRequest -Uri $imgUrl -OutFile $imgPath
+# 2. Show warning popup
+Add-Type -AssemblyName PresentationFramework
+[System.Windows.MessageBox]::Show("↑↑↑ Chiralium Spike Detected ↑↑↑`nPossible BT presence nearby.","DOOMS Warning",[System.Windows.MessageBoxButton]::OK,[System.Windows.MessageBoxImage]::Warning)
+
+# 3. Download BT image and save to desktop
+try {
+    Invoke-WebRequest -Uri $imgUrl -OutFile $imgPath -UseBasicParsing
+    if (Test-Path $imgPath) {
+        Write-Output "Image dropped: $imgPath"
+    } else {
+        Write-Output "Failed to download image."
+    }
+} catch {
+    Write-Output "Image error: $($_.Exception.Message)"
+}
+
+# 4. Set BT image as wallpaper
+try {
+    $code = @"
+using System.Runtime.InteropServices;
+public class Wallpaper {
+    [DllImport("user32.dll", SetLastError = true)]
+    public static extern bool SystemParametersInfo(int uAction, int uParam, string lpvParam, int fuWinIni);
+}
+"@
+    Add-Type -TypeDefinition $code
+    [Wallpaper]::SystemParametersInfo(20, 0, $imgPath, 3)
+} catch {
+    Write-Output "Wallpaper set failed: $($_.Exception.Message)"
+}
+
+# 5. Play sound (browser-based fallback)
+Start-Process $soundUrl
+
 
 # Simulate Chiralium scan
 Add-Type -AssemblyName PresentationFramework
