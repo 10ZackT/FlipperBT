@@ -1,12 +1,12 @@
 # === Death Stranding BT Encounter Payload ===
 
 # Paths
-$desktop     = [Environment]::GetFolderPath('Desktop')
+$desktop     = "$env:USERPROFILE\Desktop"
 $username    = $env:USERNAME
 $imgUrl      = "https://raw.githubusercontent.com/10ZackT/FlipperBT/main/bt.png"
 $imgPath     = "$desktop\bt.png"
-$soundUrl    = "https://raw.githubusercontent.com/10ZackT/FlipperBT/main/bt_whistle.mp3"
-$soundPath   = "$env:TEMP\bt_whistle.mp3"
+$soundUrl    = "https://raw.githubusercontent.com/10ZackT/FlipperBT/main/bt_whistle.wav"
+$soundPath   = "$env:TEMP\bt_whistle.wav"
 $reportPath  = "$desktop\DOOMS_Report.txt"
 
 # -------------------------------
@@ -61,9 +61,14 @@ Unauthorized dissemination of this report is punishable by UCA Directive 0049A.
 "@
 
 try {
-    $report | Out-File -Encoding UTF8 $reportPath
+    $report | Out-File -Encoding UTF8 $reportPath -Force
+    if (Test-Path $reportPath) {
+        Write-Host "✅ DOOMS report created at: $reportPath"
+    } else {
+        Write-Host "❌ DOOMS report creation failed: file not found after writing."
+    }
 } catch {
-    Write-Output "DOOMS report failed: $($_.Exception.Message)"
+    Write-Host "❌ DOOMS report error: $($_.Exception.Message)"
 }
 
 # -------------------------------
@@ -74,7 +79,7 @@ try {
     Add-Type -AssemblyName PresentationFramework
     [System.Windows.MessageBox]::Show("↑↑↑ Chiralium Spike Detected ↑↑↑`nPossible BT presence nearby.","DOOMS Warning",[System.Windows.MessageBoxButton]::OK,[System.Windows.MessageBoxImage]::Warning)
 } catch {
-    Write-Output "Popup failed: $($_.Exception.Message)"
+    Write-Host "❌ Popup failed: $($_.Exception.Message)"
 }
 
 # -------------------------------
@@ -83,7 +88,7 @@ try {
 
 try {
     Invoke-WebRequest -Uri $imgUrl -OutFile $imgPath -UseBasicParsing
-    Write-Host "Downloaded image to $imgPath"
+    Write-Host "✅ Downloaded image to $imgPath"
     Start-Sleep -Milliseconds 500
     if (Test-Path $imgPath) {
         $code = @"
@@ -96,10 +101,10 @@ public class Wallpaper {
         Add-Type -TypeDefinition $code
         [Wallpaper]::SystemParametersInfo(20, 0, $imgPath, 3)
     } else {
-        Write-Output "Wallpaper image not found after download."
+        Write-Host "❌ Wallpaper image not found after download."
     }
 } catch {
-    Write-Output "Wallpaper set failed: $($_.Exception.Message)"
+    Write-Host "❌ Wallpaper set failed: $($_.Exception.Message)"
 }
 
 # -------------------------------
@@ -108,7 +113,7 @@ public class Wallpaper {
 
 try {
     Invoke-WebRequest -Uri $soundUrl -OutFile $soundPath -UseBasicParsing
-    Write-Host "Downloaded sound to $soundPath"
+    Write-Host "✅ Downloaded sound to $soundPath"
     Start-Sleep -Milliseconds 500
     if (Test-Path $soundPath) {
         Add-Type -AssemblyName presentationCore
@@ -117,8 +122,8 @@ try {
         $player.Load()
         $player.PlaySync()
     } else {
-        Write-Output "Sound file not found after download."
+        Write-Host "❌ Sound file not found after download."
     }
 } catch {
-    Write-Output "Sound playback failed: $($_.Exception.Message)"
+    Write-Host "❌ Sound playback failed: $($_.Exception.Message)"
 }
